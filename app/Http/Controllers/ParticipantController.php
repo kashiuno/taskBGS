@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Event;
 use App\Http\Requests\ParticipantRequest;
+use App\Jobs\EmailNotification;
 use App\Participant;
 use Exception;
 use Illuminate\Http\Request;
@@ -45,6 +46,8 @@ class ParticipantController extends Controller
 
         $data = $request->all();
         Participant::create($data);
+
+        EmailNotification::dispatch();
 
         return $this->getSuccessJsonResponse();
     }
