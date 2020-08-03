@@ -7,6 +7,7 @@ use App\Http\Requests\ParticipantRequest;
 use App\Jobs\EmailNotification;
 use App\Participant;
 use Exception;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ParticipantController extends Controller
@@ -17,14 +18,12 @@ class ParticipantController extends Controller
      * @param \Illuminate\Http\Request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(Request $request) {
+    public function index(Request $request): JsonResponse {
         $event = $request->get('event');
         $amount = $request->get('amount') ?? 20;
-        return response()->json(
-            ($event)
-                ? Participant::where('event_id', $event)->take($amount)->get()
-                : Participant::all()->take($amount)
-        );
+
+        $participants = ($event) ? Participant::where('event_id', $event)->take($amount)->get() : Participant::all()->take($amount);
+        return response()->json($participants);
     }
 
     /**
@@ -33,23 +32,22 @@ class ParticipantController extends Controller
      * @param  \App\Http\Requests\ParticipantRequest  $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(ParticipantRequest $request) {
+    public function store(ParticipantRequest $request): JsonResponse {
         $event_id = $request->get('event_id');
-        try {
-            Event::findOrFail($event_id);
-        } catch (Exception $e) {
+
+        if (!$this->isEventExist($event_id)) {
             return response()->json([
                 'success' => false,
                 'error' => 'This event is not exist.',
             ]);
         }
 
-        $data = $request->all();
+        $data = $request->only(['name', 'surname', 'email', 'event_id']);
         Participant::create($data);
 
         EmailNotification::dispatch();
 
-        return $this->getSuccessJsonResponse(201);
+        return $this->getSuccessJsonResponse(JsonResponse::HTTP_CREATED);
     }
 
     /**
@@ -70,9 +68,9 @@ class ParticipantController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function update(ParticipantRequest $request, Participant $participant) {
-        $data = $request->all();
+        $data = $request->only(['name', 'surname', 'email', 'event_id']);
         $participant->fill($data)->save();
-        return $this->getSuccessJsonResponse(200);
+        return $this->getSuccessJsonResponse();
     }
 
     /**
@@ -84,7 +82,7 @@ class ParticipantController extends Controller
     public function destroy(Participant $participant) {
         try {
             $participant->delete();
-            return $this->getSuccessJsonResponse(200);
+            return $this->getSuccessJsonResponse();
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -94,11 +92,26 @@ class ParticipantController extends Controller
     }
 
     /**
+     * @param int
      * @return \Illuminate\Http\JsonResponse
      */
-    private function getSuccessJsonResponse(int $code) {
+    private function getSuccessJsonResponse(int $code = JsonResponse::HTTP_OK) {
         return response()->json([
             'success' => true,
         ], $code);
+    }
+
+    /**
+     *
+     * @param int
+     * @return bool
+     */
+    private function isEventExist(int $event_id): bool {
+        try {
+            Event::findOrFail($event_id);
+        } catch (Exception $e) {
+            return false;
+        }
+        return true;
     }
 }
