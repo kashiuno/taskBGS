@@ -2,6 +2,7 @@
 
 use App\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Log;
 
 class UserSeeder extends Seeder
 {
@@ -12,6 +13,7 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        factory(User::class, 1)->create();
+        $user = factory(User::class, 1)->create();
+        Log::info('api_token:' . $user->toArray()[0]['api_token']);
     }
 }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\User;
-use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 
 class RegisterController extends Controller
@@ -13,10 +13,10 @@ class RegisterController extends Controller
     /**
      * Handle the incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @param  \App\Http\Requests\Auth\RegisterRequest
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function __invoke(RegisterRequest $request)
+    public function __invoke(RegisterRequest $request): JsonResponse
     {
         $user = $request->except('password');
         $user['password'] = Hash::make($request->input('password'));
@@ -24,6 +24,6 @@ class RegisterController extends Controller
 
         return response()->json([
             'success' => true,
-        ], 200);
+        ], JsonResponse::HTTP_CREATED);
     }
 }
