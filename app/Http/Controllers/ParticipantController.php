@@ -49,7 +49,7 @@ class ParticipantController extends Controller
 
         EmailNotification::dispatch();
 
-        return $this->getSuccessJsonResponse();
+        return $this->getSuccessJsonResponse(201);
     }
 
     /**
@@ -72,7 +72,7 @@ class ParticipantController extends Controller
     public function update(ParticipantRequest $request, Participant $participant) {
         $data = $request->all();
         $participant->fill($data)->save();
-        return $this->getSuccessJsonResponse();
+        return $this->getSuccessJsonResponse(200);
     }
 
     /**
@@ -84,7 +84,7 @@ class ParticipantController extends Controller
     public function destroy(Participant $participant) {
         try {
             $participant->delete();
-            return $this->getSuccessJsonResponse();
+            return $this->getSuccessJsonResponse(200);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -96,9 +96,9 @@ class ParticipantController extends Controller
     /**
      * @return \Illuminate\Http\JsonResponse
      */
-    private function getSuccessJsonResponse() {
+    private function getSuccessJsonResponse(int $code) {
         return response()->json([
             'success' => true,
-        ]);
+        ], $code);
     }
 }
