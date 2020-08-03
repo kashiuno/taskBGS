@@ -15,8 +15,6 @@ class EmailNotification implements ShouldQueue
 
     /**
      * Create a new job instance.
-     *
-     * @param array $emailData
      */
     public function __construct()
     {
@@ -30,6 +28,6 @@ class EmailNotification implements ShouldQueue
      */
     public function handle()
     {
-        Log::debug('Email was send:');
+        Log::debug('Email was send!');
     }
 }
